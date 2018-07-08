@@ -793,7 +793,7 @@ def seek_industries_4(dbPath, driverPath):
     c = conn.cursor()
 
     categories = {}
-    c.execute("SELECT id, name FROM searches WHERE isChecked=0")
+    c.execute("SELECT id, name FROM categories WHERE isActive=1")
     for obj_row in c.fetchall(): categories[obj_row[0]] = obj_row[1]
 
     cities = {}
@@ -807,7 +807,7 @@ def seek_industries_4(dbPath, driverPath):
         cr_city = cities[city_id]
         for cat_id in categories.keys():
             cr_cat = categories[cat_id]
-            is_checked = c.execute("SELECT id FROM checkedData WHERE obj='{}' AND city='{}'".format(cr_cat,cr_city))
+            is_checked = c.execute("SELECT id FROM checkedData WHERE cat='{}' AND city='{}'".format(cr_cat,cr_city))
             if not is_checked.fetchone():
                 cr_link = link_template.format(cr_city,cr_cat)
                 driver.get(cr_link)
