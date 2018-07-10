@@ -643,7 +643,7 @@ def read_link(link):
         if not name_el:
             name_el = soup.find_all("div", "card__headerWrapper")
     if name_el:
-        val = name_el[0].text
+        val = name_el[0].text.split(',')[0]
         result['brand'] = sf.clear_string(val, sf.rus_letters + sf.lat_letters + sf.digits + sf.puncts + ' ')
 
     comp_type = soup.find_all("div", "cardHeader__headerDescriptionText")
@@ -655,7 +655,7 @@ def read_link(link):
         addr_el = soup.find_all("a", "card__addressLink")
 
     if addr_el:
-        result['addr'] = sf.clear_string(addr_el[0].text, sf.rus_letters + sf.lat_letters + sf.digits + sf.puncts + ' ')
+        result['addr'] = sf.clear_string(addr_el[0].text, sf.rus_letters + sf.lat_letters + sf.digits + sf.puncts + ' ' + '/')
         """
         addr_arr = result['addr'].split(',')
         if len(addr_arr) > 1:
@@ -665,16 +665,10 @@ def read_link(link):
         """
 
     tel_el = soup.find_all("a", "contact__phonesItemLink")
+    if not tel_el:
+        tel_el = soup.find_all("a", "mediaContacts__phonesNumber")
     if tel_el:
         result['tel'] = tel_el[0].text
-
-    quisine_el_list = soup.find_all("ul", "mediaAttributes__groupList")
-    if quisine_el_list:
-        txt = ""
-        for el in quisine_el_list[0].contents:
-            txt += el.text
-        if txt:
-            result['quisine'] = txt
 
     rubric_el = soup.find_all("div", "cardRubrics__rubrics")
     if not rubric_el:
@@ -689,6 +683,8 @@ def read_link(link):
 
     website_el = soup.find_all("div", "card__legal")
     if not website_el:
+        website_el = soup.find_all("a", "mediaContacts__website")
+    if not website_el:
         website_el = soup.find_all("a", "contact__linkText")
         if website_el:
             if hasattr(website_el[0], 'attrs'):
@@ -697,6 +693,8 @@ def read_link(link):
         result['website'] = website_el[0].text
 
     description_el = soup.find_all("li", "cardAttributes__attrsListItem")
+    if not description_el:
+        description_el = soup.find_all("ul", "mediaAttributes__groupList")
     descr_field = ''
     if description_el:
         for el in description_el[0].contents:
@@ -715,14 +713,17 @@ def read_link(link):
             result['hasRest'] = 1
 
         # get price
-        bill_pos = result['descr'].find(' от ')
+        bill_pos = result['descr'].find(' чек')
+        bill_offset = 4
+        if bill_pos == -1:
+            bill_pos = result['descr'].find(' от ')
+            bill_offset = 4
         if bill_pos != -1:
             bill = ''
-            while sf.is_digit(result['descr'][bill_pos+4]):
-                bill += str(result['descr'][bill_pos + 4])
+            while sf.is_digit(result['descr'][bill_pos + bill_offset]):
+                bill += str(result['descr'][bill_pos + bill_offset])
                 bill_pos += 1
             result['bill'] = bill
-    pass
 
     return result
 
@@ -753,7 +754,7 @@ def read_addr_cards(dbPath, table_name):
         conn.commit()
         time.sleep(0.5)
 
-compName = "Vlad_laptop_home"
+compName = "Vlad_desctop"
 driverPath = ""
 dbPath = "//METSYS/analysts/Marketing/DataBase/gisDataMarketing.db"
 if compName == "Vlad_desctop":
@@ -764,9 +765,9 @@ elif compName == "Vlad_laptop_home":
     driverPath = "C:/my_folder/browserDrivers/chromedriver.exe"
     dbPath = "C:/my_folder/scripts/2gis/gisDataMarketing.db"
 
-seek_industries_4(dbPath, driverPath)
+# seek_industries_4(dbPath, driverPath)
 
-# read_addr_cards(dbPath, 'output')
+read_addr_cards(dbPath, 'output')
 
 # get_geo(dbPath, "barbers")
 
