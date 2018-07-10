@@ -276,7 +276,7 @@ def execute_query(conn, query, time_limit=0):
             conn.commit()
             return c.lastrowid
         except:
-            if time_limit > 0 and time.clock() - cr_time > time_limit:
+            if (time_limit > 0 and time.clock() - cr_time > time_limit) or time_limit == 0:
                 print("unable to execute: " + query)
                 return -1
 
