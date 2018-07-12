@@ -713,11 +713,15 @@ def read_link(link):
             result['hasRest'] = 1
 
         # get price
-        bill_pos = result['descr'].find(' чек')
-        bill_offset = 4
+        bill_offset = 5
+        bill_pos = result['descr'].find(' чек ')
+        if bill_pos == -1:
+            bill_pos = result['descr'].find(' чек')
+            bill_offset = 4
         if bill_pos == -1:
             bill_pos = result['descr'].find(' от ')
             bill_offset = 4
+
         if bill_pos != -1:
             bill = ''
             while sf.is_digit(result['descr'][bill_pos + bill_offset]):
@@ -754,6 +758,7 @@ def read_addr_cards(dbPath, table_name):
         conn.commit()
         time.sleep(0.5)
 
+
 compName = "Vlad_desctop"
 driverPath = ""
 dbPath = "//METSYS/analysts/Marketing/DataBase/gisDataMarketing.db"
@@ -767,11 +772,9 @@ elif compName == "Vlad_laptop_home":
 
 # seek_industries_4(dbPath, driverPath)
 
-read_addr_cards(dbPath, 'output')
+# read_addr_cards(dbPath, 'output')
 
 # get_geo(dbPath, "barbers")
-
-
 
 
 
