@@ -566,6 +566,7 @@ def seek_industries_4(dbPath, driverPath):
                     cards_list = soup.findAll("a", "mediaMiniCard__link")
                     if cards_list:  # large list
                         for card in cards_list:  # collect data for each company on the page
+                            cnt_objects += 1
                             href = card.attrs['href']
                             if href:
                                 sf.execute_query(conn, "INSERT INTO output (category, city, link) VALUES ('{}','{}','{}')".format(cr_cat, cr_city, href))
@@ -581,6 +582,7 @@ def seek_industries_4(dbPath, driverPath):
                                         sf.execute_query(conn,"INSERT INTO output (category, city, link) VALUES ('{}','{}','{}')".format(cr_cat, cr_city, href))
 
                         else:  # single card
+                            cnt_objects += 1
                             data_dict, back_link = read_single_card(driver)
                             if len(data_dict) == 0:
                                 print("unable to read data: city = {}, category = {}, link = {}".format(cr_city,cr_cat,driver.current_url))
