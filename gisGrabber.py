@@ -557,7 +557,7 @@ def seek_industries_4(dbPath, driverPath):
                 soup = BeautifulSoup(''.join(txt), 'html.parser')
                 total_objects_el = soup.find_all('span', 'searchBar__mediaTabTextValue')
                 if len(total_objects_el) > 0:
-                    total_objects_num = total_objects_el[0].text
+                    total_objects_num = int(total_objects_el[0].text)
                 else:
                     print('Unable to get total number of the companies for {}'.format(cr_link))
                     break
