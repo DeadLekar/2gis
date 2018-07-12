@@ -552,9 +552,17 @@ def seek_industries_4(dbPath, driverPath):
                 cr_link = link_template.format(cr_city,cr_cat)
                 driver.maximize_window()
                 driver.get(cr_link)
+                time.sleep(6)
+                txt = driver.execute_script("return document.body.innerHTML")
+                soup = BeautifulSoup(''.join(txt), 'html.parser')
+                total_objects_el = soup.find_all('span', 'searchBar__mediaTabTextValue')
+                if len(total_objects_el) > 0:
+                    total_objects_num = total_objects_el[0].text
+                else:
+                    print('Unable to get total number of the companies for {}'.format(cr_link))
+                    break
+                cnt_objects = 0
                 while 1:  # go through companies in current category
-                    txt = driver.execute_script("return document.body.innerHTML")
-                    soup = BeautifulSoup(''.join(txt), 'html.parser')
                     cards_list = soup.findAll("a", "mediaMiniCard__link")
                     if cards_list:  # large list
                         for card in cards_list:  # collect data for each company on the page
@@ -565,6 +573,7 @@ def seek_industries_4(dbPath, driverPath):
                         cards_list = soup.find_all("div", "searchResults__list")
                         if cards_list:
                             for card in cards_list[0].contents:
+                                cnt_objects += 1
                                 link_item = card.find_all("a", "miniCard__headerTitleLink")
                                 if link_item:
                                     href = link_item[0].attrs.get('href')
@@ -590,7 +599,11 @@ def seek_industries_4(dbPath, driverPath):
                         driver.get(driver.current_url)
                         response = get_next_page(driver)
                     if response == 0: break
+                    txt = driver.execute_script("return document.body.innerHTML")
+                    soup = BeautifulSoup(''.join(txt), 'html.parser')
                 sf.execute_query(conn,"INSERT INTO checkedData (category, city) VALUES ('{}', '{}')".format(cr_cat, cr_city))
+                if cnt_objects / total_objects_num < 0.9:
+                    print('{} objects detected instead of {} for {}'.format(cnt_objects, total_objects_num, cr_city))
 
     # else:
     #    click_element(driver, "a.link.searchBar__mediaButton.searchBar__mediaClose._undashed", False)
@@ -770,7 +783,7 @@ elif compName == "Vlad_laptop_home":
     driverPath = "C:/my_folder/browserDrivers/chromedriver.exe"
     dbPath = "C:/my_folder/scripts/2gis/gisDataMarketing.db"
 
-# seek_industries_4(dbPath, driverPath)
+seek_industries_4(dbPath, driverPath)
 
 # read_addr_cards(dbPath, 'output')
 
