@@ -512,7 +512,7 @@ def get_next_page(driver):
         i = 0
         while 1:
             i += 1
-            print('trying to click next arrow {}'.format(i))
+            # print('trying to click next arrow {}'.format(i))
             try:
                 while next_link.location['x'] == 0: pass
                 next_link.click()
@@ -553,16 +553,20 @@ def seek_industries_4(dbPath, driverPath):
                 driver.maximize_window()
                 driver.get(cr_link)
                 time.sleep(6)
-                txt = driver.execute_script("return document.body.innerHTML")
-                soup = BeautifulSoup(''.join(txt), 'html.parser')
-                total_objects_el = soup.find_all('span', 'searchBar__mediaTabTextValue')
+                # txt = driver.execute_script("return document.body.innerHTML")
+                # soup = BeautifulSoup(''.join(txt), 'html.parser')
+                # total_objects_el = soup.find_all('span', 'searchBar__mediaTabTextValue')
+                """
                 if len(total_objects_el) > 0:
                     total_objects_num = int(total_objects_el[0].text)
                 else:
                     print('Unable to get total number of the companies for {}'.format(cr_link))
                     break
+                """
                 cnt_objects = 0
                 while 1:  # go through companies in current category
+                    txt = driver.execute_script("return document.body.innerHTML")
+                    soup = BeautifulSoup(''.join(txt), 'html.parser')
                     cards_list = soup.findAll("a", "mediaMiniCard__link")
                     if cards_list:  # large list
                         for card in cards_list:  # collect data for each company on the page
@@ -570,6 +574,7 @@ def seek_industries_4(dbPath, driverPath):
                             href = card.attrs['href']
                             if href:
                                 sf.execute_query(conn, "INSERT INTO output (category, city, link) VALUES ('{}','{}','{}')".format(cr_cat, cr_city, href))
+                                print(cnt_objects)
                     else:  # mini list
                         cards_list = soup.find_all("div", "searchResults__list")
                         if cards_list:
@@ -580,7 +585,7 @@ def seek_industries_4(dbPath, driverPath):
                                     href = link_item[0].attrs.get('href')
                                     if href:
                                         sf.execute_query(conn,"INSERT INTO output (category, city, link) VALUES ('{}','{}','{}')".format(cr_cat, cr_city, href))
-
+                                        print(cnt_objects)
                         else:  # single card
                             cnt_objects += 1
                             data_dict, back_link = read_single_card(driver)
@@ -601,12 +606,12 @@ def seek_industries_4(dbPath, driverPath):
                         driver.get(driver.current_url)
                         response = get_next_page(driver)
                     if response == 0: break
-                    txt = driver.execute_script("return document.body.innerHTML")
-                    soup = BeautifulSoup(''.join(txt), 'html.parser')
+                    time.sleep(2)
                 sf.execute_query(conn,"INSERT INTO checkedData (category, city) VALUES ('{}', '{}')".format(cr_cat, cr_city))
+                """
                 if cnt_objects / total_objects_num < 0.9:
                     print('{} objects detected instead of {} for {}'.format(cnt_objects, total_objects_num, cr_city))
-
+                """
     # else:
     #    click_element(driver, "a.link.searchBar__mediaButton.searchBar__mediaClose._undashed", False)
     #    click_element(driver, "a.link.frame__controlsButton._close._undashed", False)
@@ -671,6 +676,11 @@ def read_link(link):
 
     if addr_el:
         result['addr'] = sf.clear_string(addr_el[0].text, sf.rus_letters + sf.lat_letters + sf.digits + sf.puncts + ' ' + '/')
+    dop_addr_el = soup.find_all("div", "mediaAddress__drilldown")
+    if not dop_addr_el:
+        dop_addr_el = soup.find_all("div", "_purpose_drilldown")
+    if dop_addr_el:
+        result['addr_dop'] = sf.clear_string(dop_addr_el[0].text, sf.rus_letters + sf.lat_letters + sf.digits + sf.puncts + ' ' + '/')
         """
         addr_arr = result['addr'].split(',')
         if len(addr_arr) > 1:
@@ -756,9 +766,13 @@ def read_addr_cards(dbPath, table_name):
         link = LINK_START + row[0]
         print(link)
         id = row[1]
-        html_data = read_link(link)
-        if len(html_data) > 0:
+        html_data = None
+        try:
+            html_data = read_link(link)
+        except: pass
+        if html_data:
             if html_data.get('addr'): sf.execute_query(conn, "UPDATE {} SET addr = '{}' WHERE id={}".format(table_name, html_data['addr'], id), 3)
+            if html_data.get('addr_dop'): sf.execute_query(conn, "UPDATE {} SET addr_dop = '{}' WHERE id={}".format(table_name, html_data['addr_dop'], id), 3)
             if html_data.get('brand'): sf.execute_query(conn,"UPDATE {} SET brand = '{}' WHERE id={}".format(table_name, html_data['brand'], id), 3)
             if html_data.get('website'): sf.execute_query(conn, "UPDATE {} SET website = '{}' WHERE id={}".format(table_name, html_data['website'], id), 3)
             if html_data.get('tel'): sf.execute_query(conn, "UPDATE {} SET tel = '{}' WHERE id={}".format(table_name, html_data['tel'], id), 3)
@@ -774,7 +788,7 @@ def read_addr_cards(dbPath, table_name):
         time.sleep(0.5)
 
 
-compName = "Vlad_desctop"
+compName = "Vlad_laptop"
 driverPath = ""
 dbPath = "//METSYS/analysts/Marketing/DataBase/gisDataMarketing.db"
 if compName == "Vlad_desctop":
@@ -785,9 +799,9 @@ elif compName == "Vlad_laptop_home":
     driverPath = "C:/my_folder/browserDrivers/chromedriver.exe"
     dbPath = "C:/my_folder/scripts/2gis/gisDataMarketing.db"
 
-seek_industries_4(dbPath, driverPath)
+# seek_industries_4(dbPath, driverPath)
 
-# read_addr_cards(dbPath, 'output')
+read_addr_cards(dbPath, 'output_old_1')
 
 # get_geo(dbPath, "barbers")
 
