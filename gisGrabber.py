@@ -759,36 +759,40 @@ def read_link(link):
 def read_addr_cards(dbPath, table_name):
     conn = lite.connect(dbPath)
     c = conn.cursor()
-    rows = c.execute("SELECT link, id FROM {} WHERE link is not Null and isChecked = 0".format(table_name)).fetchall()
-    LINK_START = "https://2gis.ru"
-    cnt = 0
-    for row in rows:
-        link = LINK_START + row[0]
-        print(link)
-        id = row[1]
-        html_data = None
-        try:
-            html_data = read_link(link)
-        except: pass
-        if html_data:
-            if html_data.get('addr'): sf.execute_query(conn, "UPDATE {} SET addr = '{}' WHERE id={}".format(table_name, html_data['addr'], id), 3)
-            if html_data.get('addr_dop'): sf.execute_query(conn, "UPDATE {} SET addr_dop = '{}' WHERE id={}".format(table_name, html_data['addr_dop'], id), 3)
-            if html_data.get('brand'): sf.execute_query(conn,"UPDATE {} SET brand = '{}' WHERE id={}".format(table_name, html_data['brand'], id), 3)
-            if html_data.get('website'): sf.execute_query(conn, "UPDATE {} SET website = '{}' WHERE id={}".format(table_name, html_data['website'], id), 3)
-            if html_data.get('tel'): sf.execute_query(conn, "UPDATE {} SET tel = '{}' WHERE id={}".format(table_name, html_data['tel'], id), 3)
-            if html_data.get('compType'): sf.execute_query(conn, "UPDATE {} SET compType = '{}' WHERE id={}".format(table_name, html_data['compType'], id), 3)
-            if html_data.get('descr'): sf.execute_query(conn, "UPDATE {} SET descr = '{}' WHERE id={}".format(table_name, html_data['descr'], id), 3)
-            if html_data.get('bill'): sf.execute_query(conn, "UPDATE {} SET bill = '{}' WHERE id={}".format(table_name, html_data['bill'], id), 3)
-            if html_data.get('stars'): sf.execute_query(conn, "UPDATE {} SET stars = '{}' WHERE id={}".format(table_name, html_data['stars'], id), 3)
-            if html_data.get('hasRest'): sf.execute_query(conn, "UPDATE {} SET hasRest = '{}' WHERE id={}".format(table_name, html_data['hasRest'], id), 3)
+    rows = c.execute("SELECT link, id FROM {} WHERE link is not Null and isChecked = 0 LIMIT 3600".format(table_name)).fetchall()
+    if rows:
+        LINK_START = "https://2gis.ru"
+        cnt = 0
+        for row in rows:
+            link = LINK_START + row[0]
+            print(link)
+            id = row[1]
+            html_data = None
+            try:
+                html_data = read_link(link)
+            except: pass
+            if html_data:
+                if html_data.get('addr'): sf.execute_query(conn, "UPDATE {} SET addr = '{}' WHERE id={}".format(table_name, html_data['addr'], id), 3)
+                if html_data.get('addr_dop'): sf.execute_query(conn, "UPDATE {} SET addr_dop = '{}' WHERE id={}".format(table_name, html_data['addr_dop'], id), 3)
+                if html_data.get('brand'): sf.execute_query(conn,"UPDATE {} SET brand = '{}' WHERE id={}".format(table_name, html_data['brand'], id), 3)
+                if html_data.get('website'): sf.execute_query(conn, "UPDATE {} SET website = '{}' WHERE id={}".format(table_name, html_data['website'], id), 3)
+                if html_data.get('tel'): sf.execute_query(conn, "UPDATE {} SET tel = '{}' WHERE id={}".format(table_name, html_data['tel'], id), 3)
+                if html_data.get('compType'): sf.execute_query(conn, "UPDATE {} SET compType = '{}' WHERE id={}".format(table_name, html_data['compType'], id), 3)
+                if html_data.get('descr'): sf.execute_query(conn, "UPDATE {} SET descr = '{}' WHERE id={}".format(table_name, html_data['descr'], id), 3)
+                if html_data.get('bill'): sf.execute_query(conn, "UPDATE {} SET bill = '{}' WHERE id={}".format(table_name, html_data['bill'], id), 3)
+                if html_data.get('stars'): sf.execute_query(conn, "UPDATE {} SET stars = '{}' WHERE id={}".format(table_name, html_data['stars'], id), 3)
+                if html_data.get('hasRest'): sf.execute_query(conn, "UPDATE {} SET hasRest = '{}' WHERE id={}".format(table_name, html_data['hasRest'], id), 3)
+                conn.commit()
+
+            sf.execute_query(conn, "UPDATE {} SET isChecked = 1 WHERE id={}".format(table_name, id), 3)
             conn.commit()
+            time.sleep(0.5)
+        return 1
+    else:
+        return 0
 
-        sf.execute_query(conn, "UPDATE {} SET isChecked = 1 WHERE id={}".format(table_name, id), 3)
-        conn.commit()
-        time.sleep(0.5)
 
-
-compName = "Vlad_laptop"
+compName = "Vlad_desctop"
 driverPath = ""
 dbPath = "//METSYS/analysts/Marketing/DataBase/gisDataMarketing.db"
 if compName == "Vlad_desctop":
@@ -801,7 +805,7 @@ elif compName == "Vlad_laptop_home":
 
 # seek_industries_4(dbPath, driverPath)
 
-read_addr_cards(dbPath, 'output_old_1')
+read_addr_cards(dbPath, 'output')
 
 # get_geo(dbPath, "barbers")
 
