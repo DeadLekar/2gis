@@ -759,7 +759,7 @@ def read_link(link):
 def read_addr_cards(dbPath, table_name):
     conn = lite.connect(dbPath)
     c = conn.cursor()
-    rows = c.execute("SELECT link, id FROM {} WHERE link is not Null and isChecked = 0 LIMIT 3600".format(table_name)).fetchall()
+    rows = c.execute("SELECT link, id FROM {} WHERE link is not Null and isChecked = 0 and id <= 154348".format(table_name)).fetchall()
     if rows:
         LINK_START = "https://2gis.ru"
         cnt = 0
